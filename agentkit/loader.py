@@ -4,6 +4,7 @@ Simple, lightweight plugin loader.
 Drop this into any project for instant plugin support.
 """
 
+import importlib
 import importlib.util
 import platform
 import sys
@@ -106,15 +107,93 @@ class Plugins:
             self._log(f"❌ Failed to load {plugin_file.name}: {e}")
             return False
     
+    def load_package_plugin(self, plugin_dir: Path) -> bool:
+        """Load a package-based plugin from a directory."""
+        try:
+            # Check if it has __init__.py
+            init_file = plugin_dir / "__init__.py"
+            if not init_file.exists():
+                return False
+            
+            # Add the plugins directory to sys.path temporarily
+            plugins_parent = str(self.plugins_dir.absolute())
+            if plugins_parent not in sys.path:
+                sys.path.insert(0, plugins_parent)
+            
+            try:
+                # Import the package
+                module = importlib.import_module(plugin_dir.name)
+                # Force reload in case it was already imported
+                importlib.reload(module)
+            except ImportError as e:
+                self._log(f"❌ Failed to import {plugin_dir.name}: {e}")
+                return False
+            finally:
+                # Remove from sys.path
+                if plugins_parent in sys.path:
+                    sys.path.remove(plugins_parent)
+            
+            # Get module info
+            module_info = getattr(module, "_module_info", {})
+            if not module_info:
+                self._log(f"⚠️  {plugin_dir.name}/ missing _module_info")
+                return False
+            
+            # Get Module Exports
+            module_exports = getattr(module, "_module_exports", {})
+            if not module_exports:
+                self._log(f"⚠️  {plugin_dir.name}/ missing _module_exports")
+                return False
+            
+            # Check compatibility
+            if not self._is_compatible(module_info):
+                self._log(f"⚠️  {plugin_dir.name}/ not compatible")
+                return False
+            
+            # Register exports
+            plugin_name = plugin_dir.name
+            self.metadata[plugin_name] = module_info
+            
+            # Register tools
+            for tool in module_exports.get("tools", []):
+                if callable(tool):
+                    self.tools[f"{plugin_name}.{tool.__name__}"] = tool
+            
+            # Call initialization function if provided
+            init_function = module_exports.get("init_function")
+            if init_function and callable(init_function):
+                try:
+                    init_function()
+                    self._log(f"🔧 Initialized {plugin_name}")
+                except Exception as e:
+                    self._log(f"⚠️  Failed to initialize {plugin_name}: {e}")
+            
+            name = module_info.get("name", plugin_name)
+            version = module_info.get("version", "")
+            self._log(f"✅ Loaded {name} {version} (package)")
+            return True
+            
+        except Exception as e:
+            self._log(f"❌ Failed to load {plugin_dir.name}/: {e}")
+            return False
+
     def load_all(self) -> int:
         """Load all plugins from the plugins directory."""
         if not self.plugins_dir.exists():
             return 0
         
         loaded = 0
+        
+        # Load single-file plugins
         for plugin_file in self.plugins_dir.glob("*.py"):
             if not plugin_file.name.startswith("__"):
                 if self.load_plugin(plugin_file):
+                    loaded += 1
+        
+        # Load package-based plugins
+        for plugin_dir in self.plugins_dir.iterdir():
+            if plugin_dir.is_dir() and not plugin_dir.name.startswith("__") and plugin_dir.name != "__pycache__":
+                if self.load_package_plugin(plugin_dir):
                     loaded += 1
         
         if not self.silent and loaded > 0:

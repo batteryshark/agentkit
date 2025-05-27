@@ -64,7 +64,12 @@ python -m agentkit check
 
 ## Plugin Development
 
-### Plugin Structure
+AgentKit supports two types of plugins:
+
+1. **Single-file plugins** - Simple plugins in a single `.py` file
+2. **Package plugins** - Complex plugins organized as Python packages with multiple modules
+
+### Single-File Plugin Structure
 
 Create a Python file in the `plugins/` directory with this structure:
 
@@ -120,6 +125,71 @@ _module_exports = {
 # END OF EXPORTS
 # =============================================================================
 ```
+
+### Package Plugin Structure
+
+For complex plugins with multiple modules, create a directory in `plugins/` with an `__init__.py` file:
+
+```
+plugins/
+├── my_complex_plugin/
+│   ├── __init__.py          # Contains _module_info and _module_exports
+│   ├── core.py              # Main functionality
+│   ├── utils.py             # Helper functions
+│   ├── models.py            # Data models
+│   └── resources/
+│       └── config.json
+└── simple_plugin.py         # Single-file plugins still work
+```
+
+The `__init__.py` file should follow the same structure as single-file plugins:
+
+```python
+# =============================================================================
+# START OF MODULE METADATA
+# =============================================================================
+_module_info = {
+    "name": "My Complex Plugin",
+    "description": "A plugin with multiple modules",
+    "author": "Your Name",
+    "version": "1.0.0",
+    "platform": "any",
+    "python_requires": ">=3.10",
+    "dependencies": ["requests>=2.0.0"],
+    "environment_variables": {
+        "MY_PLUGIN_API_KEY": {
+            "description": "API key for my service",
+            "required": True
+        }
+    }
+}
+# =============================================================================
+# END OF MODULE METADATA
+# =============================================================================
+
+# Import functions from your modules
+from .core import main_function
+from .utils import helper_function
+
+# =============================================================================
+# START OF EXPORTS
+# =============================================================================
+_module_exports = {
+    "tools": [main_function, helper_function]
+}
+# =============================================================================
+# END OF EXPORTS
+# =============================================================================
+```
+
+### Benefits of Package Plugins
+
+Package plugins are ideal for:
+- **Complex functionality** that requires multiple modules
+- **Shared utilities** between plugin functions
+- **Resource management** (templates, configs, data files)
+- **Better organization** and maintainability
+- **Code reuse** and modular design
 
 ### Environment Variables
 
