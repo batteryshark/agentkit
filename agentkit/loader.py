@@ -1,0 +1,152 @@
+#!/usr/bin/env python3
+"""
+Simple, lightweight plugin loader.
+Drop this into any project for instant plugin support.
+"""
+
+import importlib.util
+import platform
+import sys
+from pathlib import Path
+from typing import Dict, List, Any, Optional, Callable
+
+
+class Plugins:
+    """Simple plugin registry and loader."""
+    
+    def __init__(self, plugins_dir: str = "plugins", silent: bool = False):
+        self.plugins_dir = Path(plugins_dir)
+        self.silent = silent
+        self.tools: Dict[str, Callable] = {}
+        self.metadata: Dict[str, Dict[str, Any]] = {}
+        
+        # Auto-load plugins on init
+        self.load_all()
+    
+    def _log(self, message: str) -> None:
+        """Log message if not in silent mode."""
+        if not self.silent:
+            print(f"🔌 {message}")
+    
+    def _is_compatible(self, module_info: Dict[str, Any]) -> bool:
+        """Check if plugin is compatible with current environment."""
+        # Check platform
+        platform_req = module_info.get("platform")
+        if platform_req:
+            current_platform = platform.system().lower()
+            if isinstance(platform_req, str):
+                platform_req = [platform_req]
+            if isinstance(platform_req, list) and current_platform not in platform_req:
+                return False
+        
+        # Check Python version (basic check)
+        python_req = module_info.get("python_requires")
+        if python_req and python_req.startswith(">="):
+            try:
+                min_version = tuple(map(int, python_req[2:].split('.')))
+                if sys.version_info[:len(min_version)] < min_version:
+                    return False
+            except:
+                pass  # Ignore parsing errors
+        
+        return True
+    
+    def load_plugin(self, plugin_file: Path) -> bool:
+        """Load a single plugin file."""
+        try:
+            # Load the module
+            spec = importlib.util.spec_from_file_location(plugin_file.stem, plugin_file)
+            if not spec or not spec.loader:
+                return False
+            
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            
+            # Get module info
+            module_info = getattr(module, "_module_info", {})
+            if not module_info:
+                self._log(f"⚠️  {plugin_file.name} missing _module_info")
+                return False
+            
+            # Get Module Exports
+            module_exports = getattr(module, "_module_exports", {})
+            if not module_exports:
+                self._log(f"⚠️  {plugin_file.name} missing _module_exports")
+                return False
+            
+            # Check compatibility
+            if not self._is_compatible(module_info):
+                self._log(f"⚠️  {plugin_file.name} not compatible")
+                return False
+            
+            # Register exports
+            plugin_name = plugin_file.stem
+            self.metadata[plugin_name] = module_info
+            
+            # Register tools
+            for tool in module_exports.get("tools",[]):
+                if callable(tool):
+                    self.tools[f"{plugin_name}.{tool.__name__}"] = tool
+                      
+            
+            name = module_info.get("name", plugin_name)
+            version = module_info.get("version", "")
+            self._log(f"✅ Loaded {name} {version}")
+            return True
+            
+        except Exception as e:
+            self._log(f"❌ Failed to load {plugin_file.name}: {e}")
+            return False
+    
+    def load_all(self) -> int:
+        """Load all plugins from the plugins directory."""
+        if not self.plugins_dir.exists():
+            return 0
+        
+        loaded = 0
+        for plugin_file in self.plugins_dir.glob("*.py"):
+            if not plugin_file.name.startswith("__"):
+                if self.load_plugin(plugin_file):
+                    loaded += 1
+        
+        if not self.silent and loaded > 0:
+            self._log(f"Loaded {loaded} plugins")
+        
+        return loaded
+    
+    def get_tool(self, name: str) -> Optional[Callable]:
+        """Get a tool by name."""
+        return self.tools.get(name)
+    
+    def list_tools(self) -> List[str]:
+        """List all available tools."""
+        return list(self.tools.keys())
+    
+    def get_all_tools(self) -> List[Callable]:
+        """Get all tools."""
+        return list(self.tools.values())
+
+    
+    def list_plugins(self) -> Dict[str, Dict[str, Any]]:
+        """List all loaded plugins with metadata."""
+        return self.metadata.copy()
+
+
+# Convenience functions for simple usage
+def load_plugins(plugins_dir: str = "plugins", silent: bool = False) -> Plugins:
+    """Load plugins and return the registry."""
+    return Plugins(plugins_dir, silent)
+
+
+if __name__ == "__main__":
+    # Example usage
+    plugins = load_plugins()
+    
+    print(f"\n📋 Summary:")
+    print(f"   Plugins: {len(plugins.list_plugins())}")
+    print(f"   Tools: {len(plugins.list_tools())}")
+    
+    if plugins.list_tools():
+        print(f"\n🔧 Available tools:")
+        for tool in plugins.list_tools():
+            print(f"   • {tool}")
