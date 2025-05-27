@@ -162,13 +162,9 @@ That's it! Your capability is now available to all your agents.
 
 ## 📦 Built-in Capabilities
 
-AgentKit comes with some useful capabilities out of the box:
+AgentKit comes with an example out of the box:
 
 - **🍎 macOS Notifier**: Send native macOS notifications
-- **🔔 Cross-platform Notifications**: Universal notification system
-- **📁 File Operations**: Safe file reading/writing capabilities
-- **🌐 Web Requests**: HTTP client with safety controls
-- **📊 Data Processing**: Common data manipulation tools
 
 ## 🌍 Environment Management
 
