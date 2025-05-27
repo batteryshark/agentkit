@@ -33,16 +33,16 @@ def authentication_required_wrapper(func):
 # =============================================================================
 # Langfuse Wrapper
 # =============================================================================
-#from langfuse import get_client, observe
+"""
+from langfuse import Langfuse, observe
 # use the new langfuse V3 SDK - pip install "langfuse>=3.0.0b2"
-# Langfuse API credentials
-#os.environ["LANGFUSE_PUBLIC_KEY"] = "pk-..."
-#os.environ["LANGFUSE_SECRET_KEY"] = "sk-..."
-# Langfuse host (choose one)
-#os.environ["LANGFUSE_HOST"] = "http://localhost:3000"
-#os.environ["LANGFUSE_TRACING_ENVIRONMENT"] = "mcp-example"
-#langfuse = get_client()
-
+langfuse = Langfuse(
+  public_key=os.environ["LANGFUSE_PUBLIC_KEY"],
+  secret_key=os.environ["LANGFUSE_SECRET_KEY"],
+  host=os.environ["LANGFUSE_HOST"],
+  environment="mcp-example"
+)
+"""
 
 # -- MCP CONFIG --
 MCP_HOST = os.getenv("MCP_HOST", "0.0.0.0")
