@@ -32,7 +32,7 @@ class Plugins:
         """Check if plugin is compatible with current environment."""
         # Check platform
         platform_req = module_info.get("platform")
-        if platform_req:
+        if platform_req and platform_req != "any":
             current_platform = platform.system().lower()
             if isinstance(platform_req, str):
                 platform_req = [platform_req]
@@ -87,7 +87,15 @@ class Plugins:
             for tool in module_exports.get("tools",[]):
                 if callable(tool):
                     self.tools[f"{plugin_name}.{tool.__name__}"] = tool
-                      
+            
+            # Call initialization function if provided
+            init_function = module_exports.get("init_function")
+            if init_function and callable(init_function):
+                try:
+                    init_function()
+                    self._log(f"🔧 Initialized {plugin_name}")
+                except Exception as e:
+                    self._log(f"⚠️  Failed to initialize {plugin_name}: {e}")
             
             name = module_info.get("name", plugin_name)
             version = module_info.get("version", "")
