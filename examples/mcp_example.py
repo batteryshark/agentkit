@@ -30,6 +30,20 @@ def authentication_required_wrapper(func):
     return wrapper
 # =============================================================================
 
+# =============================================================================
+# Langfuse Wrapper
+# =============================================================================
+#from langfuse import get_client, observe
+# use the new langfuse V3 SDK - pip install "langfuse>=3.0.0b2"
+# Langfuse API credentials
+#os.environ["LANGFUSE_PUBLIC_KEY"] = "pk-..."
+#os.environ["LANGFUSE_SECRET_KEY"] = "sk-..."
+# Langfuse host (choose one)
+#os.environ["LANGFUSE_HOST"] = "http://localhost:3000"
+#os.environ["LANGFUSE_TRACING_ENVIRONMENT"] = "mcp-example"
+#langfuse = get_client()
+
+
 # -- MCP CONFIG --
 MCP_HOST = os.getenv("MCP_HOST", "0.0.0.0")
 MCP_PORT = int(os.getenv("MCP_PORT", 5055))
@@ -57,11 +71,13 @@ print("\n" + env_manager.get_plugin_env_summary())
 # Add tools to MCP server
 for tool in tool_plugins.list_tools():
     print(f"Adding tool to MCP Server: {tool}")
-    mcp.add_tool(tool_plugins.get_tool(tool))
-    # Alternatively, you can use the authentication_required_wrapper to wrap the tools
-    # This will require the user to authenticate before using the tools
-    # mcp.add_tool(authentication_required_wrapper(tool_plugins.get_tool(tool)))    
-
+    current_tool = tool_plugins.get_tool(tool)
+    # Alternatively, you can use the authentication_required_wrapper to wrap the tools and require the user to authenticate before using the tools
+    #current_tool = authentication_required_wrapper(current_tool) # Authentication Wrapper
+    # Alternatively, you can use the observe decorator to wrap the tools
+    #current_tool = observe(current_tool) # Langfuse Wrapper
+    mcp.add_tool(current_tool)
+    
 
 
 if __name__ == "__main__":
