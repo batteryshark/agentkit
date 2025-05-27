@@ -11,7 +11,7 @@ A lightweight, flexible toolkit for extending AI agents and MCP servers with mod
 
 ## ✨ Features
 
-- 🔌 **Drop-in Capabilities**: Add new tools by simply dropping Python files in a folder
+- 🔌 **Drop-in Capabilities**: Add new tools by simply dropping Python files or packages in a folder
 - 🤖 **AI Agent Ready**: Perfect for Pydantic AI, LangChain, and other agent frameworks
 - 🌐 **MCP Server Support**: Built-in integration with Model Context Protocol servers
 - 🌍 **Smart Environment Management**: Automatic `.env` template generation and validation
