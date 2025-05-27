@@ -162,9 +162,7 @@ That's it! Your capability is now available to all your agents.
 
 ## 📦 Built-in Capabilities
 
-AgentKit comes with an example out of the box:
-
-- **🍎 macOS Notifier**: Send native macOS notifications
+AgentKit comes with example plugins out of the box (see plugins).
 
 ## 🌍 Environment Management
 
