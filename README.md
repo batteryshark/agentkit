@@ -196,19 +196,9 @@ pip install -r plugin_requirements.txt
 
 ## 🎯 Use Cases
 
-### AI Agent Frameworks
-- **Pydantic AI**: Add tools seamlessly
-- **LangChain**: Extend with custom tools
-- **AutoGPT**: Provide new capabilities
-- **Custom Agents**: Build your own with pre-made tools
-
-### MCP Servers
-- **FastMCP**: Instant tool integration
-- **Custom MCP**: Build servers with rich capabilities
-- **Multi-tenant**: Different capability sets per client
-
-### Development Workflows
-- **Rapid Prototyping**: Quickly test new agent capabilities
+- **AI Agent Frameworks**: Add tools seamlessly
+- **MCP Servers**: Instant tool integration
+- **Development Workflows**: Quickly test new agent capabilities
 - **Modular Development**: Build reusable capability libraries
 - **Team Collaboration**: Share capabilities across projects
 
@@ -237,11 +227,7 @@ MIT License - see `LICENSE` file for details.
 
 ## 🌟 Why AgentKit?
 
-> *"AgentKit turned my simple chatbot into a productivity powerhouse in minutes, not hours."*
-
-> *"Finally, a plugin system that just works. No complex configurations, no boilerplate - just drop in capabilities and go."*
-
-> *"The environment management alone saved me hours of debugging. AgentKit handles all the tedious stuff so I can focus on building amazing agents."*
+> *"Why Not?"*
 
 ---
 
