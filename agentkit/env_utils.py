@@ -113,7 +113,7 @@ class PluginEnvManager:
             for var_name, var_info in vars_list:
                 status = "REQUIRED" if var_info.get('required', False) else "optional"
                 current_val = os.getenv(var_name, var_info.get('default', 'unset'))
-                summary_lines.append(f"   • {var_name} ({status}): {current_val}")
+                summary_lines.append(f"   • {var_name} ({status})")
             summary_lines.append("")
         
         return "\n".join(summary_lines)
